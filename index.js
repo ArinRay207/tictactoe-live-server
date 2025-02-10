@@ -4,9 +4,9 @@ import { Pieces, Result, Phases, SuccessCodes } from './constants.js';
 
 const httpServer = createServer();
 const io = new Server(httpServer, {
-	cors: {
-		origin: "http://localhost:3000"
-	}
+    cors: {
+        origin: "*"
+    }
 });
 
 var rooms = {};
@@ -21,25 +21,25 @@ const checkBoard = (roomId) => {
             for (var j = 0; j < 3; j++) {
                 board[i][j] += 100;
             }
-        }        
+        }
         if (board[0][i] !== -1 && (board[0][i] % 10) === (board[1][i] % 10) && (board[1][i] % 10) === (board[2][i] % 10)) {
             winner = board[0][i];
             for (var j = 0; j < 3; j++) {
                 board[j][i] += 100;
             }
-        }        
+        }
     }
     if (board[0][0] !== -1 && (board[0][0] % 10) === (board[1][1] % 10) && (board[2][2] % 10) === (board[1][1] % 10)) {
         winner = board[0][0];
         for (var i = 0; i < 3; i++) {
-            board[i][i]+= 100; 
+            board[i][i] += 100;
         }
     }
-    
+
     if (board[0][2] !== -1 && (board[0][2] % 10) === (board[1][1] % 10) && (board[2][0] % 10) === (board[1][1] % 10)) {
         winner = board[0][2];
         for (var i = 0; i < 3; i++) {
-            board[i][2 - i] += 100; 
+            board[i][2 - i] += 100;
         }
     }
 
@@ -50,7 +50,7 @@ const checkBoard = (roomId) => {
                 cnt += (board[i][j] !== -1);
             }
         }
-    
+
         if (cnt === 9) {
             winner = -1;
             for (var i = 0; i < 3; i++) {
@@ -65,8 +65,8 @@ const checkBoard = (roomId) => {
 }
 
 io.on("connection", (socket) => {
-	console.log(`${socket.id} CONNECTED`);
-	
+    console.log(`${socket.id} CONNECTED`);
+
     socket.on("create", (roomId) => {
         const room = rooms[roomId];
         if (!room) {
@@ -86,16 +86,16 @@ io.on("connection", (socket) => {
         }
         console.log(rooms)
     })
-    
+
     socket.on("join", (roomId, username) => {
         console.log("JOIN")
         const room = rooms[roomId];
-        
+
         if (!room) {
             socket.emit("error", SuccessCodes.ROOM_NOT_FOUND, "ROOM NOT FOUND");
-            return;            
+            return;
         }
-        
+
         if ((room.users.filter(user => user !== null)).length === 2) {
             socket.emit("error", SuccessCodes.ROOM_FULL, "ROOM FULL");
             return;
@@ -104,9 +104,9 @@ io.on("connection", (socket) => {
         socket.join(roomId);
         socketIdToRoomId[socket.id] = roomId;
         if (room.users[0] === null) {
-            room.users[0] = {id: socket.id, username};
+            room.users[0] = { id: socket.id, username };
         } else {
-            room.users[1] = {id: socket.id, username};
+            room.users[1] = { id: socket.id, username };
         }
         io.to(roomId).emit("updateRoom", room);
         console.log(rooms)
@@ -115,10 +115,10 @@ io.on("connection", (socket) => {
     socket.on("start", (roomId) => {
         console.log("START")
         const room = rooms[roomId];
-        
+
         if (!room) {
             socket.emit("error", SuccessCodes.ROOM_NOT_FOUND, "ROOM NOT FOUND");
-            return;            
+            return;
         }
 
         if ((room.users.filter(user => user !== null)).length < 2) {
@@ -129,10 +129,10 @@ io.on("connection", (socket) => {
         room.turn = 1;
         room.firstTurn = (Math.random() > 0.5) ? 1 : 0;
         room.board = [
-                    [-1, -1, -1],
-                    [-1, -1, -1],
-                    [-1, -1, -1]
-                ];
+            [-1, -1, -1],
+            [-1, -1, -1],
+            [-1, -1, -1]
+        ];
         room.phase = Phases.ON_GOING;
 
         io.to(roomId).emit("updateRoom", room);
@@ -142,10 +142,10 @@ io.on("connection", (socket) => {
     socket.on("move", (roomId, i, j) => {
         console.log("MOVE")
         const room = rooms[roomId];
-        
+
         if (!room) {
             socket.emit("error", SuccessCodes.ROOM_NOT_FOUND, "ROOM NOT FOUND");
-            return;            
+            return;
         }
 
         if (room.turn === (room.users.findIndex(user => (user !== null && user.id === socket.id)) ^ room.firstTurn)) {
@@ -157,7 +157,7 @@ io.on("connection", (socket) => {
                 io.to(roomId).emit("updateRoom", room);
                 return;
             }
-            room.turn = (room.turn === 1) ? 0 : 1; 
+            room.turn = (room.turn === 1) ? 0 : 1;
         } else {
             return;
         }
@@ -169,15 +169,15 @@ io.on("connection", (socket) => {
     socket.on("disconnect", () => {
         console.log(socket.id + " DISCONNECTED")
 
-        const roomId = socketIdToRoomId[socket.id]; 
+        const roomId = socketIdToRoomId[socket.id];
         delete socketIdToRoomId[socket.id];
         const room = rooms[roomId];
-        
+
         if (!room) {
             socket.emit("error", SuccessCodes.ROOM_NOT_FOUND, "ROOM NOT FOUND");
-            return;            
+            return;
         }
-        
+
         room.users = room.users.map(user => ((user !== null) && (user.id === socket.id)) ? null : user);
         io.to(roomId).emit("updateRoom", room);
         console.log(rooms);
