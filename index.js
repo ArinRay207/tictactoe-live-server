@@ -1,13 +1,19 @@
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { Pieces, Result, Phases, SuccessCodes } from './constants.js';
+import express from 'express';
 
-const httpServer = createServer();
+const app = express();
+
+app.get("/", (req, res) => res.send("Welcome!"));
+
+const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
         origin: "*"
     }
 });
+
 
 var rooms = {};
 var socketIdToRoomId = {}
@@ -188,3 +194,4 @@ io.on("connection", (socket) => {
 httpServer.listen(8080, () => {
     console.log("Server connected to port 8080")
 });
+
