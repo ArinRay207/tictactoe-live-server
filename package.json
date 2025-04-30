@@ -4,9 +4,15 @@
     "express": "^4.21.2",
     "http": "^0.0.1-security",
     "nodemon": "^3.1.7",
+    "short-unique-id": "^5.2.2",
     "socket.io": "^4.8.1"
   },
   "scripts": {
-    "start": "npx nodemon index.js"
+    "start": "npx nodemon ./src/index.js",
+    "test": "jest --coverage"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.26.9",
+    "jest": "^29.7.0"
   }
 }

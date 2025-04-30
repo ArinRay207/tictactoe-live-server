@@ -71,7 +71,6 @@ const checkBoard = (roomId) => {
 }
 
 io.on("connection", (socket) => {
-    console.log(`${socket.id} CONNECTED`);
 
     socket.on("create", (roomId) => {
         const room = rooms[roomId];
@@ -90,11 +89,9 @@ io.on("connection", (socket) => {
                 phase: Phases.HASNT_STARTED
             })
         }
-        console.log(rooms)
     })
 
     socket.on("join", (roomId, username) => {
-        console.log("JOIN")
         const room = rooms[roomId];
 
         if (!room) {
@@ -115,11 +112,9 @@ io.on("connection", (socket) => {
             room.users[1] = { id: socket.id, username };
         }
         io.to(roomId).emit("updateRoom", room);
-        console.log(rooms)
     })
 
     socket.on("start", (roomId) => {
-        console.log("START")
         const room = rooms[roomId];
 
         if (!room) {
@@ -142,11 +137,9 @@ io.on("connection", (socket) => {
         room.phase = Phases.ON_GOING;
 
         io.to(roomId).emit("updateRoom", room);
-        console.log(rooms);
     })
 
     socket.on("move", (roomId, i, j) => {
-        console.log("MOVE")
         const room = rooms[roomId];
 
         if (!room) {
@@ -169,11 +162,9 @@ io.on("connection", (socket) => {
         }
 
         io.to(roomId).emit("updateRoom", room);
-        console.log(rooms);
     })
 
     socket.on("disconnect", () => {
-        console.log(socket.id + " DISCONNECTED")
 
         const roomId = socketIdToRoomId[socket.id];
         delete socketIdToRoomId[socket.id];
@@ -186,12 +177,9 @@ io.on("connection", (socket) => {
 
         room.users = room.users.map(user => ((user !== null) && (user.id === socket.id)) ? null : user);
         io.to(roomId).emit("updateRoom", room);
-        console.log(rooms);
-        console.log(socketIdToRoomId)
     })
 });
 
 httpServer.listen(8080, () => {
-    console.log("Server connected to port 8080")
 });
 
