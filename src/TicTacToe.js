@@ -10,12 +10,16 @@ export class TicTacToe {
 
     constructor(board) {
         this.turn = 0;
-        this.result = null;
+        this.result = {
+            winner: null,
+            state: new Set()
+        };
         this.moves = [];
 
         if (board) {
             this.board = Array.from(board);
             this.board.forEach((cell) => { if (cell !== '#') this.turn++ })
+            this.hasEnded();
             return;
         }
 
@@ -67,35 +71,45 @@ export class TicTacToe {
     }
 
     hasEnded() {
+        let hasEnded = false;
         // rows
         for (let i = 0; i < 3; i++) {
             if (this.board[3 * i] !== '#' && (this.board[3 * i] === this.board[3 * i + 1]) && (this.board[3 * i] === this.board[3 * i + 2])) {
-                this.result = this.board[3 * i];
-                return true;
+                this.result.winner = this.board[3 * i];
+                this.result.state.add(i);
+                hasEnded = true;
             }
         }
 
         // cols
         for (let i = 0; i < 3; i++) {
             if (this.board[i] !== '#' && (this.board[i] === this.board[i + 3]) && (this.board[i + 3] === this.board[i + 6])) {
-                this.result = this.board[i];
-                return true;
+                this.result.winner = this.board[3 * i];
+                this.result.state.add(3 + i);
+                hasEnded = true;
             }
         }
 
         // diags
-        if (this.board[4] !== '#' && (((this.board[0] === this.board[4]) && (this.board[4] === this.board[8])) || ((this.board[2] === this.board[4]) && (this.board[4] === this.board[6])))) {
-            this.result = this.board[4];
-            return true;
+        if (this.board[4] !== '#' && ((this.board[0] === this.board[4]) && (this.board[4] === this.board[8]))) {
+            this.result.winner = this.board[4];
+            this.result.state.add(6);
+            hasEnded = true;
+        }
+
+        if (this.board[4] !== '#' && ((this.board[2] === this.board[4]) && (this.board[4] === this.board[6]))) {
+            this.result.winner = this.board[4];
+            this.result.state.add(7);
+            hasEnded = true;
         }
 
         // draw
         if (this.turn === 9) {
-            this.result = "DRAW";
-            return true;
+            this.result.winner = "DRAW";
+            hasEnded = true;
         }
 
-        return false;
+        return hasEnded;
     }
 
     getResult() {

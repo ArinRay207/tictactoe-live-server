@@ -30,6 +30,7 @@ export class Manager {
 
             socket.on('message', (data) => {
                 const message = JSON.parse(data.toString());
+                console.log(message)
                 const { type, payload } = message;
                 switch (type) {
                     case eventTypes.CREATE: this.createRoom(payload.username, socket); break;
@@ -39,6 +40,7 @@ export class Manager {
 
                     case eventTypes.START: this.start(payload.roomId, socket); break;
                 }
+                console.log(JSON.stringify(this.rooms, null, 2));
             })
 
             socket.on('close', () => { this.leaveRoom(socket) })
@@ -153,6 +155,16 @@ export class Manager {
                     (this.sockets[player.socketId]).send(JSON.stringify({ payload: { game: room.getCurrentRound().game }, type: eventTypes.MOVE }));
                 }
             })
+
+            if (!room.isGameOngoing()) {
+                room.players.forEach((player) => {
+                    if (player.isConnected) {
+                        (this.sockets[player.socketId]).send(JSON.stringify({
+                            payload: { room: { id: room.id, players: room.players } }, type: eventTypes.UPDATE_ROOM
+                        }));
+                    }
+                })
+            }
         } catch (error) {
             console.error(error);
             socket.send(JSON.stringify({ type: eventTypes.ERROR, payload: { message: error.message } }));

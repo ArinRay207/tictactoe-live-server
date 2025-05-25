@@ -77,7 +77,16 @@ export class Room {
             throw new Error("GAME NOT STARTED");
         }
 
-        const currentRound = this.rounds[this.rounds.length - 1].move(move);
+        this.getCurrentRound().move(move);
+
+        if (this.getCurrentRound().hasEnded()) {
+            if (this.getCurrentRound().game.result.winner === "X") {
+                (this.players[this.getCurrentRound().firstTurn]).score++;
+            }
+            if (this.getCurrentRound().game.result.winner === "O") {
+                (this.players[1 - this.getCurrentRound().firstTurn]).score++;
+            }
+        }
     }
 
     getCurrentRound() {

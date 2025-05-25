@@ -49,4 +49,8 @@ export class Player {
         this.socketId = null;
         this.isConnected = false;
     }
+
+    increaseScore() {
+        this.score++;
+    }
 }
